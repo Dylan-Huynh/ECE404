@@ -32,17 +32,19 @@ def generate_round_keys(encryption_key):
 
 def get_encryption_key():
     key = ""
-    while True:
-        if sys.version_info[0] == 3:
-            key = input("\nEnter a string of 8 characters for the key: ")
-        else:
-            key = raw_input("\nEnter a string of 8 characters for the key: ")
-        if len(key) != 8:
-            print("\nKey generation needs 8 characters exactly.  Try again.\n")
-            continue
-        else:
-            break
-    key = BitVector(textstring = key)
+    print(sys.argv[1])
+    #while True:
+    #    if sys.version_info[0] == 3:
+    #        key = input("\nEnter a string of 8 characters for the key: ")
+    #    else:
+    #        key = raw_input("\nEnter a string of 8 characters for the key: ")
+    #    if len(key) != 8:
+    #        print("\nKey generation needs 8 characters exactly.  Try again.\n")
+    #        continue
+    #    else:
+    #        break
+    key = BitVector(filename = sys.argv[1])
+    print(key)
     key = key.permute(key_permutation_1)
     return key
 

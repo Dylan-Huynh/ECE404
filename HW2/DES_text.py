@@ -1,5 +1,7 @@
+#!/usr/bin/env python
+
 import sys
-import BitVector
+from BitVector import *
 
 key_permutation_1 = [56,48,40,32,24,16,8,0,57,49,41,33,25,17,
                       9,1,58,50,42,34,26,18,10,2,59,51,43,35,
@@ -64,29 +66,52 @@ s_boxes[7] = [ [13,2,8,4,6,15,11,1,10,9,3,14,5,0,12,7],
 [7,11,4,1,9,12,14,2,0,6,10,13,15,3,5,8],
 [2,1,14,7,4,10,8,13,15,12,9,0,3,5,6,11] ]
 
-if len(sys.argv[1]) is not 5:
-    sys.exit('''Needs 4 command line arguments, one for '''
-            '''the encryption or decrtpyion, one for the input text'''
-            '''one for the key, and one for the output text''')
-
-if (sys.argv[1] is "-e"):
-    encrypt(sys.argv[2], sys.argv[3])
-elif(sys.argv is "-d"):
-    decrypt(sys.argv[2], sys.argv[3])
-else:
-    sys.exit('''argument one is not of form "-e" or "-d"''')
-
-
-
-def encrypt(text, key):
-    round_key = generate_round_keys( key )
+def encrypt(text, key, encrypted):
+    outfile = open(encrypted, "w")
+    encryption_key = get_cipher_key(key)
+    round_key = generate_round_keys( encryption_key )
     bv = BitVector(filename = text)
+    i = 0
     while (bv.more_to_read):
         bitvec = bv.read_bits_from_file( 64 )
-        if bitvec.getsize() > 0:
+        
+        if bitvec._getsize() > 0:
+            [LE, RE] = bitvec.divide_into_two()
+            print(RE.get_bitvector_in_hex())
+            newRE = RE.permute( expansion_permutation )
+            out_xor = newRE ^ round_key[0]
+            #Steps from Substitution Lecture Code
+            RE_substution = BitVector (size = 32)
+            segments = [out_xor[x*6:x*6+6] for x in range(8)]
+            for sindex in range(len(segments)):
+                row = 2*segments[sindex][0] + segments[sindex][-1]
+                column = int(segments[sindex][1:-1])
+                RE_substution[sindex*4:sindex*4+4] = BitVector(intVal = s_boxes[sindex][row][column], size = 4)
+
+            #Steps from P-Box Permutation Lecture Code
+            RE_modified = RE_substution.permute( pbox_permutation )
+            
+            #String them back together
+            xor_LE = LE ^ RE_modified
+            final_string = RE + xor_LE
+            hex_final_string = final_string.get_bitvector_in_hex()
+            outfile.write(hex_final_string)
+        
+
+
+def decrypt(text, key, decrypted):
+    outfile = open(decrypted, "w")
+    bv = BitVector(filename = text)
+    
+    decryption_key = get_cipher_key(key)
+    round_key = generate_round_keys( decryption_key )
+    i = 0
+    while (bv.more_to_read):
+        bitvec = bv.read_bits_from_file( 64 )
+        if bitvec._getsize() > 0:
             [LE, RE] = bitvec.divide_into_two()
             newRE = RE.permute( expansion_permutation )
-            out_xor = newRE.bv_xor( round_key )
+            out_xor = newRE.bv_xor( round_key[0] )
             #Steps from Substitution Lecture Code
             RE_substution = BitVector (size = 32)
             segments = [out_xor[x*6:x*6+6] for x in range(8)]
@@ -100,17 +125,13 @@ def encrypt(text, key):
             
             #String them back together
             xor_LE = LE.bv_xor(RE_modified)
-            final_string = [RE, xor_LE]
-            bitvec = final_string
+            final_string = RE + xor_LE
+            hex_final_string = final_string.get_bitvector_in_hex()
+            hex_final_string.write_to_file(outfile)
 
-
-def decrypt(text, key):
-    round_key = generate_round_keys( key )
-    bv = BitVector(text)
-
-def generate_round_keys(encryption_key):
+def generate_round_keys(cipher_key):
     round_keys = []
-    key = encryption_key.deep_copy()
+    key = cipher_key.deep_copy()
     for round_count in range(16):
         [LKey, RKey] = key.divide_into_two()    
         shift = shifts_for_round_key_gen[round_count]
@@ -120,3 +141,22 @@ def generate_round_keys(encryption_key):
         round_key = key.permute(key_permutation_2)
         round_keys.append(round_key)
     return round_keys
+
+def get_cipher_key(key):
+    text_key = BitVector(filename = key)
+    key = text_key.read_bits_from_file( 64 )
+    key = key.permute(key_permutation_1)
+    return key
+
+if __name__ == "__main__":
+    if len(sys.argv) != 5:
+        sys.exit('''Needs 4 command line arguments, one for '''
+            '''the encryption or decrtpyion, one for the input text'''
+            '''one for the key, and one for the output text''')
+
+    if (sys.argv[1] == "-e"):
+        encrypt(sys.argv[2], sys.argv[3], sys.argv[4])
+    elif(sys.argv[1] == "-d"):
+        decrypt(sys.argv[2], sys.argv[3], sys.argv[4])
+    else:
+        sys.exit('''argument one is not of form "-e" or "-d"''')
