@@ -3,7 +3,7 @@ from BitVector import *
 import io
 
 def main():
-    for someRandomInteger in range(4000, 4100):
+    for someRandomInteger in range(0, 65535):
         key_bv = BitVector(intVal=someRandomInteger, size=16)
         decryptedMessage = cryptBreak.cryptBreak('ciphertext.txt', key_bv)
         if 'Sir Lewis' in decryptedMessage:
@@ -20,7 +20,8 @@ def main():
             FILEOUT.close()
             break
         else:
-            print(someRandomInteger)
+            if (someRandomInteger == 1000):
+                print(someRandomInteger)
             #print('Not decrypted yet')
 
 if __name__ == "__main__":
