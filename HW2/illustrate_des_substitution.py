@@ -67,6 +67,11 @@ s_boxes[7] = [ [13,2,8,4,6,15,11,1,10,9,3,14,5,0,12,7],
                [7,11,4,1,9,12,14,2,0,6,10,13,15,3,5,8],
                [2,1,14,7,4,10,8,13,15,12,9,0,3,5,6,11] ]
 
+pbox_permutation = [15,6,19,20,28,11,27,16,
+                    0,14,12,25,4,17,30,9,
+                    1,7,23,13,31,26,2,8,
+                    18,12,29,5,21,10,3,24]
+
 def substitute( expanded_half_block ):
     '''
     This method implements the step "Substitution with 8 S-boxes" step you see inside
@@ -87,9 +92,11 @@ right_half_32bits = BitVector( intVal = 800000700, size = 32 )
 # Now we need to expand the 32-bit block into 48 bits:
 right_half_with_expansion_permutation = right_half_32bits.permute( expansion_permutation ) 
 
-print "expanded right_half_32bits: ", right_half_with_expansion_permutation
+print("expanded right_half_32bits: ", right_half_with_expansion_permutation) 
 
 # The following statement takes the 48 bits back down to 32 bits after carrying
 # out S-box based substitutions:
 output = substitute(right_half_with_expansion_permutation)
-print output
+print (output)
+RE_modified = output.permute( pbox_permutation )
+print(RE_modified)

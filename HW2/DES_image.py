@@ -72,7 +72,16 @@ s_boxes[7] = [ [13,2,8,4,6,15,11,1,10,9,3,14,5,0,12,7],
 [2,1,14,7,4,10,8,13,15,12,9,0,3,5,6,11] ]
 
 def encrypt(text, key, encrypted):
+
+    infile = open(text, "rb")
     outfile = open(encrypted, "w")
+
+    magicNumber = infile.readline()
+    dimension = infile.readline()
+    color = infile.readline()
+
+    
+    
     encryption_key = get_cipher_key(key)
     round_key = generate_round_keys( encryption_key )
     
@@ -100,67 +109,6 @@ def encrypt(text, key, encrypted):
             final_string = RE + LE
             hex_final_string = final_string.get_bitvector_in_hex()
             outfile.write(hex_final_string)
-        
-
-
-def decrypt(text, key, decrypted):
-    infile = open(text, "r")
-    ciphertext = infile.read()
-    blocks = int( len(ciphertext) / 16)
-    outfile = open(decrypted, "w")
-    encryption_key = get_cipher_key(key)
-    round_key = generate_round_keys( encryption_key )
-    round_key.reverse()
-
-    '''while (bv.more_to_read):
-        bitvec = bv.read_bits_from_file( 64 )
-        print(bitvec.get_bitvector_in_hex())
-        zero_bv = BitVector(intVal = 0, size = 8)
-        while (bitvec._getsize() % 64 != 0):
-            bitvec = bitvec + zero_bv
-        if bitvec._getsize() > 0:
-            for round_count in range(16):
-
-                [LD, RD] = bitvec.divide_into_two()
-                newRD = RD.permute( expansion_permutation )
-                out_xor = newRD ^ round_key[round_count]
-                RD_substution = substitute(out_xor)
-                #Steps from P-Box Permutation Lecture Code
-
-                RD_modified = RD_substution.permute( pbox_permutation )
-                #String them back together
-                xor_LD = LD ^ RD_modified
-                final_string = RD + xor_LD
-                bitvec = final_string
-
-            [LD, RD] = bitvec.divide_into_two()
-            final_string = RD + LD
-            hex_final_string = final_string.get_bitvector_in_hex()
-            outfile.write(hex_final_string)'''
-    for i in range(blocks):
-        bitvec = BitVector(hexstring = ciphertext[i * 16 + 0: i * 16 + 16])
-        zero_bv = BitVector(intVal = 0, size = 8)
-        while (bitvec._getsize() % 64 != 0):
-            bitvec = bitvec + zero_bv
-            print("uhoh")
-        if bitvec._getsize() > 0:
-            for round_count in range(16):
-                [LD, RD] = bitvec.divide_into_two()
-                newRD = RD.permute( expansion_permutation )
-                out_xor = newRD ^ round_key[round_count]
-                RD_substution = substitute(out_xor)
-                #Steps from P-Box Permutation Lecture Code
-
-                RD_modified = RD_substution.permute( pbox_permutation )
-                #String them back together
-                xor_LD = LD ^ RD_modified
-                final_string = RD + xor_LD
-                bitvec = final_string
-                
-            [LD, RD] = bitvec.divide_into_two()
-            final_string = RD + LD
-            ascii_final_string = final_string.get_bitvector_in_ascii()
-            outfile.write(ascii_final_string)
 
 def generate_round_keys(cipher_key):
     round_keys = []
@@ -192,17 +140,12 @@ def substitute( expanded_half_block ):
         row = 2*segments[sindex][0] + segments[sindex][-1]
         column = int(segments[sindex][1:-1])
         output[sindex*4:sindex*4+4] = BitVector(intVal = s_boxes[sindex][row][column], size = 4)
-    return output  
+    return output
 
 if __name__ == "__main__":
-    if len(sys.argv) != 5:
+    if len(sys.argv) != 4:
         sys.exit('''Needs 4 command line arguments, one for '''
-            '''the encryption or decrtpyion, one for the input text'''
-            '''one for the key, and one for the output text''')
+            '''one for the input image one for the key, '''
+            '''and one for the output image''')
 
-    if (sys.argv[1] == "-e"):
-        encrypt(sys.argv[2], sys.argv[3], sys.argv[4])
-    elif(sys.argv[1] == "-d"):
-        decrypt(sys.argv[2], sys.argv[3], sys.argv[4])
-    else:
-        sys.exit('''argument one is not of form "-e" or "-d"''')
+    encrypt(sys.argv[1], sys.argv[2], sys.argv[3])
