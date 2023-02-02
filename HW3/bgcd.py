@@ -9,6 +9,7 @@ a,b = int(sys.argv[1]),int(sys.argv[2])
 def bgcd(a,b):
     abv = BitVector(intVal=a) 
     bbv = BitVector(intVal=b)
+    print(a,b)
     print(abv, bbv)
     if a == b: 
         print("a==b")

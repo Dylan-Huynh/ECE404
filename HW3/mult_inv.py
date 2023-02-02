@@ -13,16 +13,22 @@ def MI(num, mod):
     y, y_old = 1, 0
     while mod:
         q = num # mod
-        remainder = 0
-        i = 0
-        while(mod * 2**i < num):
-            quotient = num - mod * 2**i
-            remainder = remainder + 2**i
-            i = i + 1
-
-        num, mod = mod, remainder #changes to next step i.e. 35, 19 goes to 19, 16
-        x, x_old = x_old - q * x, x #linearization, 
-        y, y_old = y_old - q * y, y
+        remainder - bitRemainder(num, mod)
+        num, mod = mod, bitRemainder(num, mod) #changes to next step i.e. 35, 19 goes to 19, 16
+        tempx = x
+        while (tempx > 0):
+            if (~tempx & 1):
+                q << 1
+            tempx >> x
+        x, x_old = x_old - q, x #linearization, 
+        
+        q = num
+        tempy = y
+        while (tempy > 0):
+            if (~tempy & 1):
+                q << 1
+            tempy >> 1
+        y, y_old = y_old - q, y
     if num != 1:
         print("\nNO MI. However, the GCD of %d and %d is %u\n" % (NUM, MOD, num))
     else:
@@ -31,6 +37,12 @@ def MI(num, mod):
 
 MI(NUM, MOD)
 
+def bitDivide(a, b):
+
+def bitMultiply(a, b):
+
+def bitRemainder(a,b):
+    
 
 a, b = int(sys.argv[1]), int(sys.argv[2])
 def bmi(a,b, x, y):
