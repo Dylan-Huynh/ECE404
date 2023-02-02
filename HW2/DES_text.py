@@ -111,32 +111,6 @@ def decrypt(text, key, decrypted):
     encryption_key = get_cipher_key(key)
     round_key = generate_round_keys( encryption_key )
     round_key.reverse()
-
-    '''while (bv.more_to_read):
-        bitvec = bv.read_bits_from_file( 64 )
-        print(bitvec.get_bitvector_in_hex())
-        zero_bv = BitVector(intVal = 0, size = 8)
-        while (bitvec._getsize() % 64 != 0):
-            bitvec = bitvec + zero_bv
-        if bitvec._getsize() > 0:
-            for round_count in range(16):
-
-                [LD, RD] = bitvec.divide_into_two()
-                newRD = RD.permute( expansion_permutation )
-                out_xor = newRD ^ round_key[round_count]
-                RD_substution = substitute(out_xor)
-                #Steps from P-Box Permutation Lecture Code
-
-                RD_modified = RD_substution.permute( pbox_permutation )
-                #String them back together
-                xor_LD = LD ^ RD_modified
-                final_string = RD + xor_LD
-                bitvec = final_string
-
-            [LD, RD] = bitvec.divide_into_two()
-            final_string = RD + LD
-            hex_final_string = final_string.get_bitvector_in_hex()
-            outfile.write(hex_final_string)'''
     for i in range(blocks):
         bitvec = BitVector(hexstring = ciphertext[i * 16 + 0: i * 16 + 16])
         zero_bv = BitVector(intVal = 0, size = 8)

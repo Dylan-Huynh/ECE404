@@ -1,19 +1,14 @@
 #!/usr/bin/env python
 
 import sys
-import BitVector
+from BitVector import *
 
 if len(sys.argv) != 3:
     sys.stderr.write("Usage: %s <integer> <modulus>\n" % sys.argv[0])
     sys.exit(1)
-
+'''
 NUM, MOD = int(sys.argv[1]), int(sys.argv[2])
 def MI(num, mod):
-    '''
-    This function uses ordinary integer arithmetic implementation of the
-    Extended Euclid’s Algorithm to find the MI of the first-arg integer
-    vis-a-vis the second-arg integer.
-    '''
 
     NUM = BitVector(intVal = num); MOD = BitVector(intVal = mod)
     x, x_old = 0, 1
@@ -30,19 +25,33 @@ def MI(num, mod):
         print("\nMI of %d modulo %d is: %d\n" % (num, mod, MI))
 
 MI(NUM, MOD)
+'''
 
 def bmi(a,b, x, y):
-    if a == b: print("\nNO MI. However, the GCD is %d\n" % (b)) #(A)
-    if a == 0: print("\nNO MI. However, the GCD is %d\n" % (b)) #(B)
-    if b == 0: print("\nNO MI. However, the GCD is %d\n" % (a)) #(C)
-    if (~a & 1):
-        if (b &1): #(E)
-            bmi(a >> 1, b) #(F)
+    print(a,b)
+    if a == b: 
+        print("a==b")
+        print(str(int(b))) #(A)
+    if int(a) == 0: 
+        print("a=0")
+        print(str(int(b))) #(B)
+    if int(b) == 0: 
+        print("b=0")
+        print(str(int(a))) #(C)
+    if (~a):
+        if (b): #(E)
+            print("a>b")
+            bmi(a >> 1, b, x, y) #(F)
         else: #(G)
-            bmi(a >> 1, b >> 1) << 1 #(H)
-    if (~b & 1): #(I)
-        bmi(a, b >> 1) #(J)
+            print("a>b")
+            bmi(a >> 1, b >> 1, x, y) << 1 #(H)
+    if (~b): #(I)
+        print("~b&1")
+        bmi(a, b >> 1, x, y) #(J)
     if (a > b): #(K)
-        bmi( (a-b) >> 1, b) #(L)
-    ( (b-a) >> 1, a ) #(M)
+        print("a>b")
+        bmi((a-b) >> 1, b, x, y) #(L)
+    print("else")
+    ((b-a) >> 1, a, x, y) #(M)
+a, b = BitVector(intVal = int(sys.argv[1])), BitVector(intVal = int(sys.argv[2]))
 bmi(a, b, 0, 1)

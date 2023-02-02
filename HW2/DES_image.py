@@ -74,13 +74,15 @@ s_boxes[7] = [ [13,2,8,4,6,15,11,1,10,9,3,14,5,0,12,7],
 def encrypt(text, key, encrypted):
 
     infile = open(text, "rb")
-    outfile = open(encrypted, "w")
+    outfile = open(encrypted, "wb")
 
     magicNumber = infile.readline()
     dimension = infile.readline()
     color = infile.readline()
 
-    
+    outfile.write(magicNumber)
+    outfile.write(dimension)
+    outfile.write(color)
     
     encryption_key = get_cipher_key(key)
     round_key = generate_round_keys( encryption_key )
@@ -107,8 +109,9 @@ def encrypt(text, key, encrypted):
 
             [LE, RE] = bitvec.divide_into_two()
             final_string = RE + LE
-            hex_final_string = final_string.get_bitvector_in_hex()
-            outfile.write(hex_final_string)
+            final_string.write_to_file(outfile)
+            #hex_final_string = final_string.get_bitvector_in_ascii()
+            #outfile.write(hex_final_string)
 
 def generate_round_keys(cipher_key):
     round_keys = []
