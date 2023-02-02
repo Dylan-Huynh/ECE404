@@ -1,32 +1,38 @@
 #!/usr/bin/env python
 
 import sys
-from BitVector import *
 
 if len(sys.argv) != 3:
     sys.stderr.write("Usage: %s <integer> <modulus>\n" % sys.argv[0])
     sys.exit(1)
-'''
+
 NUM, MOD = int(sys.argv[1]), int(sys.argv[2])
 def MI(num, mod):
-
-    NUM = BitVector(intVal = num); MOD = BitVector(intVal = mod)
+    NUM, MOD = num, mod
     x, x_old = 0, 1
     y, y_old = 1, 0
     while mod:
         q = num # mod
-        NUM, MOD = MOD, NUM % mod #changes to next step i.e. 35, 19 goes to 19, 16
+        remainder = 0
+        i = 0
+        while(mod * 2**i < num):
+            quotient = num - mod * 2**i
+            remainder = remainder + 2**i
+            i = i + 1
+
+        num, mod = mod, remainder #changes to next step i.e. 35, 19 goes to 19, 16
         x, x_old = x_old - q * x, x #linearization, 
         y, y_old = y_old - q * y, y
     if num != 1:
-        print("\nNO MI. However, the GCD of %d and %d is %u\n" % (num, mod, int(NUM)))
+        print("\nNO MI. However, the GCD of %d and %d is %u\n" % (NUM, MOD, num))
     else:
-        MI = (x_old + mod) % mod
-        print("\nMI of %d modulo %d is: %d\n" % (num, mod, MI))
+        MI = (x_old + MOD) % MOD
+        print("\nMI of %d modulo %d is: %d\n" % (NUM, MOD, MI))
 
 MI(NUM, MOD)
-'''
 
+
+'''
 def bmi(a,b, x, y):
     print(a,b)
     if a == b: 
@@ -40,10 +46,10 @@ def bmi(a,b, x, y):
         print(str(int(a))) #(C)
     if (~a):
         if (b): #(E)
-            print("a>b")
+            print("inner a>b")
             bmi(a >> 1, b, x, y) #(F)
         else: #(G)
-            print("a>b")
+            print("innerelse")
             bmi(a >> 1, b >> 1, x, y) << 1 #(H)
     if (~b): #(I)
         print("~b&1")
@@ -55,3 +61,4 @@ def bmi(a,b, x, y):
     ((b-a) >> 1, a, x, y) #(M)
 a, b = BitVector(intVal = int(sys.argv[1])), BitVector(intVal = int(sys.argv[2]))
 bmi(a, b, 0, 1)
+'''
