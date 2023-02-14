@@ -134,6 +134,7 @@ def gen_subbytes_table():
         a1,a2,a3,a4 = [a.deep_copy() for x in range(4)]
         a ^= (a1 >> 4) ^ (a2 >> 5) ^ (a3 >> 6) ^ (a4 >> 7) ^ c
         subBytesTable.append(int(a))
+    print(subBytesTable)
     return subBytesTable
 
 def get_key_from_user():
