@@ -86,57 +86,6 @@ def xor_round_keys(state_array, key_words, round):
             new_state_array[j][i] = state_array[j][i] ^ key_words[round * 4 + i][j*8:j*8+8]
     return new_state_array
 
-
-def inverse_sub_bytes(state_array):
-    for i in range(4):
-        for j in range(4):
-            xin = (state_array[i][j]).int_val()
-            state_array[i][j] = BitVector(intVal = invSubBytesTable[xin], size = 8)
-    return state_array
-
-def inverse_shift_rows(state_array):
-    new_state_array = [[0 for x in range(4)] for x in range(4)]
-    for i in range(4):
-        for j in range(4):
-            k = -i
-            if j + k < 0:
-                k = k + 4
-            new_state_array[i][j] = state_array[i][j + k]
-    return new_state_array
-
-def inverse_mix_columns(state_array):
-    new_state_array = [[0 for x in range(4)] for x in range(4)]
-    E = BitVector(bitstring = "00001110")
-    B = BitVector(bitstring = "00001011")
-    D = BitVector(bitstring = "00001101")
-    nine = BitVector(bitstring = "00001001")
-    
-    for i in range(4):
-        for j in range(4):
-            if (i == 0):
-                new_state_array[i][j] = (state_array[0][j].gf_multiply_modular(E, AES_modulus, 8) ^ 
-                state_array[1][j].gf_multiply_modular(B, AES_modulus, 8) ^ 
-                state_array[2][j].gf_multiply_modular(D, AES_modulus, 8) ^ 
-                state_array[3][j].gf_multiply_modular(nine, AES_modulus, 8))
-            elif (i == 1):
-                new_state_array[i][j] = (state_array[1][j].gf_multiply_modular(E, AES_modulus, 8) ^ 
-                state_array[2][j].gf_multiply_modular(B, AES_modulus, 8) ^
-                state_array[3][j].gf_multiply_modular(D, AES_modulus, 8) ^ 
-                state_array[0][j].gf_multiply_modular(nine, AES_modulus, 8))
-            elif (i == 2):
-                new_state_array[i][j] = (state_array[2][j].gf_multiply_modular(E, AES_modulus, 8) ^ 
-                state_array[3][j].gf_multiply_modular(B, AES_modulus, 8) ^
-                state_array[0][j].gf_multiply_modular(D, AES_modulus, 8) ^ 
-                state_array[1][j].gf_multiply_modular(nine, AES_modulus, 8))
-            elif (i == 3):
-                new_state_array[i][j] = (state_array[3][j].gf_multiply_modular(E, AES_modulus, 8) ^ 
-                state_array[0][j].gf_multiply_modular(B, AES_modulus, 8) ^
-                state_array[1][j].gf_multiply_modular(D, AES_modulus, 8) ^ 
-                state_array[2][j].gf_multiply_modular(nine, AES_modulus, 8))
-    return new_state_array
-
-
-
 def gen_key_schedule_256(key_bv):
     #  We need 60 keywords (each keyword consists of 32 bits) in the key schedule for
     #  256 bit AES. The 256-bit AES uses the first four keywords to xor the input
@@ -178,85 +127,33 @@ def gee(keyword, round_constant, byte_sub_table):
     return newword, round_constant
 
 
-def encrypt(plaintext, key, ciphertext):
-    outfile = open(ciphertext, "w")
-    bv = BitVector(filename = plaintext)
+def encrypt(block, key):
+    
     key_bv = BitVector(filename = key)
     read_key = key_bv.read_bits_from_file( 256 )
     key_words = gen_key_schedule_256(read_key)
     
-    while (bv.more_to_read):
-        bitvec = bv.read_bits_from_file(128)
-        while (bitvec._getsize() % 128 != 0):
-            bitvec.pad_from_right(1)
-        statearray = [[0 for x in range(4)] for x in range(4)]
-        for i in range(4):
-            for j in range(4):
-                statearray[j][i] = bitvec[32*i + 8*j:32*i + 8*(j+1)]
-        statearray = xor_round_keys(statearray, key_words, 0)
-        for round in range(1,14):
-            statearray = sub_bytes(statearray)
-            statearray = shift_rows(statearray)
-            statearray = mix_columns(statearray)
-            statearray = xor_round_keys(statearray, key_words, round)
+    bitvec = block
+    while (bitvec._getsize() % 128 != 0):
+        bitvec.pad_from_right(1)
+    statearray = [[0 for x in range(4)] for x in range(4)]
+    for i in range(4):
+        for j in range(4):
+            statearray[j][i] = bitvec[32*i + 8*j:32*i + 8*(j+1)]
+    statearray = xor_round_keys(statearray, key_words, 0)
+    for round in range(1,14):
         statearray = sub_bytes(statearray)
         statearray = shift_rows(statearray)
-        statearray = xor_round_keys(statearray, key_words, 14)
-        final_bv = BitVector(size = 0)
-        for i in range(4):
-            for j in range(4):
-                final_bv = final_bv + statearray[j][i]
-        outfile.write(final_bv.get_bitvector_in_hex())
-
-def decrypt(ciphertext, key, plaintext):
-    infile = open(ciphertext, "r")
-    text = infile.read()
-    blocks = int( len(text) / 32)
-    outfile = open(plaintext, "w")
-    key_bv = BitVector(filename = key)
-    read_key = key_bv.read_bits_from_file( 256 )
-    key_words = gen_key_schedule_256(read_key)
-    for i in range(blocks):
-        
-        bitvec = BitVector(hexstring = text[i * 32 + 0: i * 32 + 32])
-        if bitvec._getsize() > 0:
-            statearray = [[0 for x in range(4)] for x in range(4)]
-            for i in range(4):
-                for j in range(4):
-                    statearray[j][i] = bitvec[32*i + 8*j:32*i + 8*(j+1)]
-            statearray = xor_round_keys(statearray, key_words, 14)
-            for round in range(13,0, -1):
-                statearray = inverse_shift_rows(statearray)
-                statearray = inverse_sub_bytes(statearray)
-                statearray = xor_round_keys(statearray, key_words, round)
-                statearray = inverse_mix_columns(statearray)
-            statearray = inverse_shift_rows(statearray)
-            statearray = inverse_sub_bytes(statearray)
-            statearray = xor_round_keys(statearray, key_words, 0)
-            final_bv = BitVector(size = 0)
-            for i in range(4):
-                for j in range(4):
-                    final_bv = final_bv + statearray[j][i]
-            ascii_final_string = final_bv.get_bitvector_in_ascii()
-            outfile.write(ascii_final_string)
-        else:
-            print("?")
-            
-            
-
-
-
-if __name__ == "__main__":
-    if len(sys.argv) != 5:
-        sys.exit('''Needs 4 command line arguments, one for '''
-            '''the encryption or decrtpyion, one for the input text'''
-            '''one for the key, and one for the output text''')
-    if sys.argv[1] == "-e":
-        encrypt(sys.argv[2], sys.argv[3], sys.argv[4])
-    elif sys.argv[1] == "-d":
-        decrypt(sys.argv[2], sys.argv[3], sys.argv[4])
-    else:
-        sys.exit('''argument one is not of form "-e" or "-d"''')
+        statearray = mix_columns(statearray)
+        statearray = xor_round_keys(statearray, key_words, round)
+    statearray = sub_bytes(statearray)
+    statearray = shift_rows(statearray)
+    statearray = xor_round_keys(statearray, key_words, 14)
+    final_bv = BitVector(size = 0)
+    for i in range(4):
+        for j in range(4):
+            final_bv = final_bv + statearray[j][i]
+    return final_bv
 
 
 
