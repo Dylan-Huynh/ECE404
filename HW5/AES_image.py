@@ -34,5 +34,6 @@ def ctr_aes_image(iv, image_file='image.ppm', out_file='enc_image.ppm',
         XORer = encrypt(iv, key_file)
         OutBlock = XORer ^ bitvec
         OutBlock.write_to_file(outfile)
-        iv = iv + BitVector(intVal = 1)
+        iv.set_value(intVal = (iv.int_val() + 1))
+
         print(iv)
