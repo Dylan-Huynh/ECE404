@@ -1,3 +1,8 @@
+#Homework Number: 5
+#Name: Dylan Huynh
+#ECN login: huynh38
+#Due Date: 2/21/2023
+
 import sys
 from BitVector import *
 from AES import encrypt
@@ -21,9 +26,9 @@ def x931(v0, dt, totalNum, key_file):
     for i in range(totalNum):
         vj = v[i]
         XOR_vj_dt = vj ^ AES_dt
-        R.append = encrypt(XOR_vj_dt, key_file)
+        R.append(encrypt(XOR_vj_dt, key_file))
         XOR_Rj_dt = R[-1] ^ AES_dt
-        v.append = encrypt(XOR_Rj_dt)
+        v.append(encrypt(XOR_Rj_dt, key_file))
     return R
 
 

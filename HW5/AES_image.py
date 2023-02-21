@@ -1,7 +1,13 @@
+#Homework Number: 5
+#Name: Dylan Huynh
+#ECN login: huynh38
+#Due Date: 2/21/2023
+
 import sys
 from BitVector import *
 from AES import encrypt
 
+AES_modulus = BitVector(bitstring='100011011')
 
 def ctr_aes_image(iv, image_file='image.ppm', out_file='enc_image.ppm',
     key_file='keyCTR.txt'):
@@ -17,23 +23,27 @@ def ctr_aes_image(iv, image_file='image.ppm', out_file='enc_image.ppm',
     '''
     infile = open(image_file, "rb")
     outfile = open(out_file, "wb")
-
     magicNumber = infile.readline()
     dimension = infile.readline()
     color = infile.readline()
     outfile.write(magicNumber)
     outfile.write(dimension)
     outfile.write(color)
-    bv = BitVector(filename = image_file)
+    #base_iv = iv.int_val()
+    #bv = BitVector(filename = image_file)
 
-
-    while (bv.more_to_read):
-        bitvec = bv.read_bits_from_file(128)
-        while (bitvec._getsize() % 128 != 0):
-            bitvec.pad_from_right(1)
+    if(iv._getsize() != 128):
+            print("wrong")
+    while (1):
+        bits = infile.read(16)
+        if len(bits) == 0:
+            break
+        bitvec = BitVector(rawbytes = bits)
+        #while (bitvec._getsize() % 128 != 0):
+        #    bitvec.pad_from_right(1)
         XORer = encrypt(iv, key_file)
         OutBlock = XORer ^ bitvec
         OutBlock.write_to_file(outfile)
-        iv.set_value(intVal = (iv.int_val() + 1))
-
-        print(iv)
+        iv = BitVector(intVal = (iv.int_val() + 1), size =128)
+        if(iv._getsize() != 128):
+            print(iv._getsize())

@@ -185,6 +185,7 @@ def encrypt(plaintext, key, ciphertext):
     read_key = key_bv.read_bits_from_file( 256 )
     key_words = gen_key_schedule_256(read_key)
     
+    
     while (bv.more_to_read):
         bitvec = bv.read_bits_from_file(128)
         while (bitvec._getsize() % 128 != 0):
