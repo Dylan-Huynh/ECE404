@@ -75,8 +75,12 @@ def encrypt(message, ptext, qtext, encrypted):
 
 
 
+
 def decrypt(encrypted, p, q, decrypted):
     decryptout = open(decrypted, "w")
+    e = 65537
+    ebv = BitVector(intVal = e)
+    d = ebv.multiplicative_inverse(totientN)
 
 if __name__ == "__main__":
     if len(sys.argv) != 4 | len(sys.argv) != 6:
