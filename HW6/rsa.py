@@ -8,25 +8,45 @@ from BitVector import *
 from PrimeGenerator import *
 
 def bgcd(a,b):
-    abv = BitVector(intVal=a) 
-    bbv = BitVector(intVal=b)
     if a == b: 
-        return a #(A)
+        return a
     if a == 0: 
-        return b #(B)
+        return b
     if b == 0: 
-        return a #(C)
-    if (~a & 1): #(D)
-        if (b &1): #(E)
-            return bgcd(a >> 1, b) #(F)
-        else: #(G)
-            return bgcd(a >> 1, b >> 1) << 1 #(H)
-    if (~b & 1): #(I)
+        return a
+    if (~a & 1):
+        if (b &1):
+            return bgcd(a >> 1, b)
+        else:
+            return bgcd(a >> 1, b >> 1) << 1
+    if (~b & 1):
         this = ~b
-        return bgcd(a, b >> 1) #(J)
-    if (a > b): #(K)
-        return bgcd( (a-b) >> 1, b) #(L)
-    return bgcd( (b-a) >> 1, a ) #(M)
+        return bgcd(a, b >> 1)
+    if (a > b):
+        return bgcd( (a-b) >> 1, b)
+    return bgcd( (b-a) >> 1, a )
+
+def MI(num, mod):
+    '''
+    This function uses ordinary integer arithmetic implementation of the
+    Extended Euclid's Algorithm to find the MI of the first-arg integer
+    vis-a-vis the second-arg integer.
+    '''
+    NUM = num; MOD = mod
+    x, x_old = 0, 1
+    y, y_old = 1, 0
+    while mod:
+        q = num // mod
+        num, mod = mod, num % mod
+        x, x_old = x_old - q * x, x
+        y, y_old = y_old - q * y, y
+    if num != 1:
+        print("\nNO MI. However, the GCD of %d and %d is %u\n" % (NUM, MOD, num))
+        return 0
+    else:
+        MI = (x_old + MOD) % MOD
+        return MI
+    
 
 def prime_generate(p, q):
     pout = open(p, "w")
@@ -59,28 +79,52 @@ def encrypt(message, ptext, qtext, encrypted):
     bv = BitVector(filename = message)
     pfile = open(ptext, "r")
     qfile = open(qtext, "r")
-    p = pfile.readline()
-    q = qfile.readline()
+    p = int(pfile.readline())
+    q = int(qfile.readline())
     n = p * q
-    totientN = (p-1) * (q-1)
+    #totientN = (p-1) * (q-1)
     e = 65537
-    ebv = BitVector(intVal = e)
-    d = ebv.multiplicative_inverse(totientN)
+    #d = MI(e, totientN)
     while (bv.more_to_read):
         bitvec = bv.read_bits_from_file(128)
         while (bitvec._getsize() % 128 != 0):
             bitvec.pad_from_right(1)
         bitvec.pad_from_left(128)
-        
+        final = pow(bitvec.int_val(), e, n)
+        final_bv = BitVector(intVal = final, size = 256)
+        encryptout.write(final_bv.get_bitvector_in_hex())
 
 
 
-
-def decrypt(encrypted, p, q, decrypted):
+def decrypt(encrypted, ptext, qtext, decrypted):
     decryptout = open(decrypted, "w")
+    encryptedf = open(encrypted, "r")
+    text = encryptedf.read()
+    blocks = int( len(text) / 64)
     e = 65537
-    ebv = BitVector(intVal = e)
-    d = ebv.multiplicative_inverse(totientN)
+    #ebv = BitVector(intVal = e)
+    pfile = open(ptext, "r")
+    qfile = open(qtext, "r")
+    p = int(pfile.readline())
+    q = int(qfile.readline())
+    n = p * q
+    totientN = (p-1) * (q-1)
+    d = MI(e, totientN)
+    for i in range(blocks):
+        bitvec = BitVector(hexstring = text[i * 64 + 0: i * 64 + 64])
+        if bitvec._getsize() > 0:
+            C = bitvec.int_val()
+            Vp = pow(C, d, p)
+            Vq = pow(C, d, q)
+            Xp = q * MI(q, p)
+            Xq = p * MI(p, q)
+            final = (Vp * Xp + Vq * Xq) % n
+            final_bv = BitVector(intVal = final, size = 256)
+            #final_bv.shift_left(128)
+            #half_final = final_bv[127:255]
+            half_final = final_bv[128:256]
+            decryptout.write(half_final.get_bitvector_in_ascii())
+
 
 if __name__ == "__main__":
     if len(sys.argv) != 4 | len(sys.argv) != 6:
@@ -90,8 +134,8 @@ if __name__ == "__main__":
     if sys.argv[1] == "-g":
         prime_generate(sys.argv[2], sys.argv[3])
     elif sys.argv[1] == "-e":
-        encrypt(sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[6])
+        encrypt(sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5])
     elif sys.argv[1] == "-d":
-        decrypt(sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[4])
+        decrypt(sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5])
     else:
         sys.exit('''argument one is not of form "-g", "-e" or "-d"''')
