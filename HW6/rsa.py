@@ -52,7 +52,6 @@ def prime_generate(p, q):
     pout = open(p, "w")
     qout = open(q, "w")
     generator = PrimeGenerator( bits = 128 ) 
-    #generator = PrimeGenerator(bits = int(256))
     
     i = 0
     e = 65537
@@ -82,9 +81,7 @@ def encrypt(message, ptext, qtext, encrypted):
     p = int(pfile.readline())
     q = int(qfile.readline())
     n = p * q
-    #totientN = (p-1) * (q-1)
     e = 65537
-    #d = MI(e, totientN)
     while (bv.more_to_read):
         bitvec = bv.read_bits_from_file(128)
         while (bitvec._getsize() % 128 != 0):
@@ -102,7 +99,6 @@ def decrypt(encrypted, ptext, qtext, decrypted):
     text = encryptedf.read()
     blocks = int( len(text) / 64)
     e = 65537
-    #ebv = BitVector(intVal = e)
     pfile = open(ptext, "r")
     qfile = open(qtext, "r")
     p = int(pfile.readline())
@@ -119,16 +115,13 @@ def decrypt(encrypted, ptext, qtext, decrypted):
             Xp = q * MI(q, p)
             Xq = p * MI(p, q)
             final = (Vp * Xp + Vq * Xq) % n
-            final_bv = BitVector(intVal = final, size = 256)
-            #final_bv.shift_left(128)
-            #half_final = final_bv[127:255]
-            half_final = final_bv[128:256]
-            decryptout.write(half_final.get_bitvector_in_ascii())
+            final_bv = BitVector(intVal = final, size = 128)
+            decryptout.write(final_bv.get_bitvector_in_ascii())
 
 
 if __name__ == "__main__":
     if len(sys.argv) != 4 | len(sys.argv) != 6:
-        sys.exit('''Needs 4 or 6 command line arguments, one for '''
+        sys.exit('''Needs 2 or 6 command line arguments, one for '''
             '''the encryption or decrtpyion, one for the input text'''
             '''one for the key, and one for the output text''')
     if sys.argv[1] == "-g":
