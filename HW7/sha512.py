@@ -1,3 +1,8 @@
+#Homework Number: 7
+#Name: Dylan Huynh
+#ECN login: huynh38
+#Due Date: 3/9/2023
+
 import sys
 from BitVector import *
 
@@ -7,6 +12,7 @@ def hash(intext, outtext):
     message = infile.read()
     bv = BitVector(textstring = message)
 
+    #8 64-bit words based on the first 8 prime numbers' square roots expressed as fractions
     h0 = BitVector(hexstring='6a09e667f3bcc908')
     h1 = BitVector(hexstring='bb67ae8584caa73b')
     h2 = BitVector(hexstring='3c6ef372fe94f82b')
@@ -16,6 +22,7 @@ def hash(intext, outtext):
     h6 = BitVector(hexstring='1f83d9abfb41bd6b')
     h7 = BitVector(hexstring='5be0cd19137e2179')
 
+    #80 64-bit words based on the first 80 prime numbers' cube roots expressed as fractions
     K = ["428a2f98d728ae22", "7137449123ef65cd", "b5c0fbcfec4d3b2f", "e9b5dba58189dbbc", 
          "3956c25bf348b538", "59f111f1b605d019", "923f82a4af194f9b", "ab1c5ed5da6d8118",
          "d807aa98a3030242", "12835b0145706fbe", "243185be4ee4b28c", "550c7dc3d5ffb4e2",
@@ -39,6 +46,7 @@ def hash(intext, outtext):
     
     K_bv = [BitVector(hexstring = k_constant) for k_constant in K]
 
+    #Pads the BV with the appropritate leength making sure it is 1024 bit divisible with the extra 129 bits necessary
     length = bv.length()
     bv1 = bv + BitVector(bitstring="1")
     length1 = bv1.length()
@@ -49,9 +57,13 @@ def hash(intext, outtext):
     bv4 = bv2 + bv3
     words = [None] * 80
 
+    #iterate through all the blocks
     for n in range(0,bv4.length(),1024):
-        block = bv4[n:n+1024]
+        block = bv4[n:n+1024] 
         
+        # words firstly are the block broken into 16 sections
+        # next 80 words are found with previous words and two of the words are 
+        # shifted to the right 3 times in different amount and XORed
         words[0:16] = [block[i:i+64] for i in range(0,1024,64)]
         for i in range(16, 80):                      
             i_minus_2_word = words[i-2]
@@ -65,7 +77,9 @@ def hash(intext, outtext):
         
         a,b,c,d,e,f,g,h = h0,h1,h2,h3,h4,h5,h6,h7
         
-
+        # Round processing where the 8 registers holding the hash are iteracted upon, mixing and matching
+        # where the move up one, and h and d registers are operated on when switching to a and e
+        # Making sure the final registers are still of appropriate length
         for i in range(80):
             ch = (e & f) ^ ((~e) & g)
             maj = (a & b) ^ (a & c) ^ (b & c)
@@ -83,7 +97,7 @@ def hash(intext, outtext):
             b = a
             a = BitVector(intVal=(int(t1) + int(t2)) & 0xFFFFFFFFFFFFFFFF, size=64)
         
-
+        #The final iteration of the given block, sets the final output as the input for the next block
         h0 = BitVector( intVal = (int(h0) + int(a)) & 0xFFFFFFFFFFFFFFFF, size=64 )
         h1 = BitVector( intVal = (int(h1) + int(b)) & 0xFFFFFFFFFFFFFFFF, size=64 )
         h2 = BitVector( intVal = (int(h2) + int(c)) & 0xFFFFFFFFFFFFFFFF, size=64 )
@@ -93,7 +107,7 @@ def hash(intext, outtext):
         h6 = BitVector( intVal = (int(h6) + int(g)) & 0xFFFFFFFFFFFFFFFF, size=64 )
         h7 = BitVector( intVal = (int(h7) + int(h)) & 0xFFFFFFFFFFFFFFFF, size=64 )
         
-
+    #Put it together and write!
     message_hash = h0 + h1 + h2 + h3 + h4 + h5 + h6 + h7
     hash_hex_string = message_hash.getHexStringFromBitVector()
     outfile.write(hash_hex_string)
