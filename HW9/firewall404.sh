@@ -1,3 +1,5 @@
+#!/bin/sh
+
 #Homework Number: 9
 #Name: Dylan Huynh
 #ECN login: huynh38
