@@ -1,0 +1,9 @@
+#/usr/bin/bash
+# this will run the parser on all of the non-error test files and produce a 
+# .pout file as the # output of the parser.  Your parser should produce a .out 
+# file to be read by the VM.
+for f in {1..74}
+do
+   echo junkMail/junkMail_$f 
+   perl EmailParser2.pl junkMail/junkMail_$f
+done
