@@ -1,3 +1,7 @@
+//Homework Number: 10
+//Name: Dylan Huynh
+//ECN login: huynh38
+//Due Date: 4/4/2023
 /*
 / file : server.c
 /------------------------------------------
@@ -118,7 +122,8 @@ char * clientComm(int clntSockfd,int * senderBuffSize_addr, int * optlen_addr){
         exit(1);
     }    
 
-    strcpy(str, recvBuff);
+    //strcpy(str, recvBuff); //Problem!
+    strncpy(str, recvBuff, MAX_DATA_SIZE); //Caps the number of copyable bytes into the buffer so it does not overflow
 	
     /* send data to the client */
     if (send(clntSockfd, str, strlen(str), 0) == -1) {
