@@ -1,3 +1,8 @@
+#Homework Number: 11
+#Name: Dylan Huynh
+#ECN login: huynh38
+#Due Date: 4/11/2023
+
 SHELL=/bin/sh
 PATH=/usr/local/lib/mh:$PATH
 MAILDIR=$HOME/Mail
@@ -13,117 +18,35 @@ LOG=`perl GET_MESSAGE_INDEX`
 LOG="$EOL"
 
 ## Homework Recipe_1:
-##
+## The colon isn't important but no other flags means it looks at the header, but the ^From makes it check 
+## for From at the  beginnning of a line and then it looks for (>, <), the \ is because < and > 
+## are special characters
 :0 :
-* ^From.*\,
+* ^From.*>\, \<
 recipe_1
 
 ## Homework Recipe_2:
-## |pills|Ppjills|plills
+## This looks for the words Diploma diploma Ppjills plills watches Magento medications in the Subject
+## part of the header. Not directly for the junk mail examples but also checks for pills and Pills 
 :0 :
-* ^Subject.*((d|Diploma)|degree|(P|p)*ills|watches|Magento)
+* ^Subject.*((d|D)iploma|degree|(Ppj|pl|P|p)ills|watches|Magento|medications)
 recipe_2
 
 ## Homework Recipe_3:
-##
-:0 :
-
+## The B in the collumn line tells the recipe to check the header line. Then it looks for the words GOLD 
+## or Ruby throughtout the body
+:0 B:
+* ^*(GOLD|Ruby)
 recipe_3
 
 ## Homework Recipe_4:
-##
-:0 :
+## This is a compound rule, which means all of the condition lines have to be satisfied to be read a spam
+## The HB flag is because a multipart/alternative content type email will have the types of the parts in the body
+## the body types must be plain and html and after comes charset = "utf-8"| charset=utf-8|$ where $ denotes end 
+## of the line. The encoding method must be quoted-printable, 8bit or 7bit
+:0 HB:
+* ^Content-Type: multipart/alternative
+* ^Content-Type: text/plain;( charset = "utf-8"| charset=utf-8|$)
+* ^Content-Type: text/html;( charset = "utf-8"| charset=utf-8|$)
+* ^Content-Transfer-Encoding: (quoted-printable|8bit|7bit)
 recipe_4
-
-## Recipe_1:
-##
-:0 :
-* ^From.*purdue\.edu
-* ^Subject.*404
-my404Folder
-
-
-
-## Recipe_2:
-##
-## This recipe will only be invoked if the subject line
-## constains the string 'sports' This email will go into
-## your mailbox for the special account.  You need to
-## replace the 'your_special_account_name' string with what
-## applies to you
-##
-:0 :
-* ^Subject.*sports
-/var/mail/ece404i0
-
-
-
-## Recipe_3:
-##
-## This is an emailing recipe.  It will send to your regular
-## Purdue webmail account all messages that originate from
-## the purdue.edu domain and that have survived the previous
-## recipes.
-##
-##
-## IMPORTANT NOTE: The email address in the last line of the
-## recipe is your Purdue webmail address --- the address on
-## which you normally receive your email DO NOT put your
-## special account name in that line since that would create
-## an infinite loop.
-##
-:0 :
-* ^From.*purdue\.edu
-!huynh38@purdue.edu
-
-
-
-## Recipe_4:
-##
-## This is one of the recipes in your instructor's spam
-## filter If your drug related spam does not originate from
-## Purdue, this recipe will kick in.  
-##
-## IMPORTANT: Since spammers fake their headers, a spam
-## message actually coming from outside Purdue may still
-## look like it is coming from Purdue.
-##
-:0 B
-* < 10000
-* (\<v.codin\>|\<viicodin\>|\<vi.?c0[^a-z]din\>|\<vi.?codin.?\>|v[^a-z]codin|\<..?a1ium\>|\<val.?iu.?m\>|\<v@[^a-z]ium\>|\<vi0xx\>|va-[^a-z]ium|\<va1[ ]?[ ]?ium\>|\<valliuum\>|\<pr.ozac\>|\<vall.um\>|\<amb.jen\>|\<ui.tram\>|\<pro.zac\>|\<val..um\>|\<val...um\>|\<pr...zac\>|>mbie.n|\<v a l|\<va..um\>|\<v.alium\>|\<va.llum\>|\<va.ll.?um\>|\<va.lium\>|\<vali.um\>|\<przoac|\<levtira|\<zolotf|lorazpeam|prozaac)
-* (\<vi.gra\>|\<v1a[^a-z]gra\>|[^a-z]/iaa?gra\>|\<vii?aa?graa?|\<v[^a-z]agra\>|\<via[ ][ ]?gra\>|\<vi[ ]+graa?|\<v..agra\>|\<v.agg?ra\>|\<v.agr..a|>i.agra|g r a|v i a|\<vi..ra\>|\<v.iagra\>|\<v..agra\>|\<v..agra\>|\<viag.ra\>|\<vaigra|\<vair.a\>|\<vai..ra\>|\<vai.?gra\>)
-* (\<cialli.s\>|\<cia[^a-z]ii?s\>|\<cia[ ]?[ ]?1is\>|\<cia.?l.?is\>|\<cai[ ]+llis\>|\<xa.?naa?x\>|\<xan[ ]?ax\>|\<x[^a-z]an@x\>|\<meds\>|\<[0-9]o-?%|codeinn?e|\<c..alis\>|\<xa.nax\>|\<c.all.s\>|\<xan...ax\>|a.nax\>|i.alis\>|a l [it] s|c [it] a l|c / a|l / s|\<ci...lis\>|\<c.ialis\>|\<ci.alls\>|\<c..al.s\>|\<cial.is\>|\<cailis|\<caillis|\<xnaax|\<ca.ilis\>)
-* (http://|\<www\>)
-{
-  LOG="Email Trashed by Recipe_4$EOL"
-
-  :0 :
-  /dev/null
-}
-
-
-
-## Recipe_5:
-##
-## This is another recipe from your instructor's spam filter
-##
-:0 HB
-* charset="koi8-r"
-{
-  LOG="Email trashed because it is in Russian$EOL"
-
-  :0 :
-  /dev/null
-}
-
-
-
-## Recipe_6:
-## 
-## The rest of the email to your special account will be 
-## deposited in the file spamFolder
-##
-:0 :
-spamFolder
-
-
